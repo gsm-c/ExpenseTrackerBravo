@@ -9,7 +9,6 @@ public class Main {
     public static void main(String[] args) {
         // Initialize database
         DatabaseManager.initializeDatabase();
-
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
