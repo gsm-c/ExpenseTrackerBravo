@@ -1,5 +1,6 @@
 package com.expensetracker.gui;
 
+import com.expensetracker.gui.ExpenseOverviewPanel;
 import com.expensetracker.models.User;
 
 import javax.swing.*;

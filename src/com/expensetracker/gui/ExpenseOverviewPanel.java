@@ -22,126 +22,180 @@ public class ExpenseOverviewPanel extends JPanel {
 
     public ExpenseOverviewPanel(User user) {
         this.user = user;
+        initializeUI();
+    }
+
+    private void initializeUI() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Table setup
-        String[] columns = {"ID", "Type", "Category", "Amount", "Date", "Description"};
+        String[] columns = {"ID", "Type", "Category", "Amount", "Date", "Description", "Edit", "Delete"};
         DefaultTableModel model = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Make table non-editable
+                return column >= 6;
+            }
+
+            @Override
+            public Class<?> getColumnClass(int column) {
+                return (column >= 6) ? JButton.class : Object.class;
             }
         };
 
-        //Table setup
         transactionsTable = new JTable(model);
         transactionsTable.setRowHeight(30);
+        transactionsTable.setAutoCreateRowSorter(true);
+
+        setupActionColumns();
+
+        add(new JScrollPane(transactionsTable), BorderLayout.CENTER);
+        add(createButtonPanel(), BorderLayout.SOUTH);
+        add(createChartPanel(), BorderLayout.EAST);
+
         refreshTable();
-/*
-        //Button Renderer
-        class ButtonRenderer extends JButton implements TableCellRenderer{
-            public ButtonRenderer(){
-                setOpaque(true);
-            }
+    }
 
-            public Component getTableCellRendererComponent(JTable table, Object value,
-                                                           boolean isSelected, boolean hasFocus, int row, int column) {
-                setText((value == null) ? "" : value.toString());
-                return this;
-            }
-        }
+    private void setupActionColumns() {
+        TableColumn editColumn = transactionsTable.getColumnModel().getColumn(6);
+        editColumn.setCellRenderer(new ButtonRenderer());
+        editColumn.setCellEditor(new ButtonEditor(new JCheckBox()));
+        editColumn.setMaxWidth(80);
 
-        //Button Editor
-        class ButtonEditor extends DefaultCellEditor {
-            private JButton button;
-            private String label;
-            private boolean isPushed;
-            private int currentRow;
+        TableColumn deleteColumn = transactionsTable.getColumnModel().getColumn(7);
+        deleteColumn.setCellRenderer(new ButtonRenderer());
+        deleteColumn.setCellEditor(new ButtonEditor(new JCheckBox()));
+        deleteColumn.setMaxWidth(80);
+    }
 
-            public ButtonEditor(JCheckBox checkBox) {
-                super(checkBox);
-                button = new JButton();
-                button.setOpaque(true);
-                button.addActionListener(e -> fireEditingStopped());
-            }
-            public Component getTableCellEditorComponent(JTable table, Object value,
-                                                         boolean isSelected, int row, int column) {
-                label = (value == null) ? "" : value.toString();
-                button.setText(label);
-                currentRow = row;
-                isPushed = true;
-                return button;
-            }
-
-            public Object getCellEditorValue() {
-                if (isPushed) {
-                    int modelRow = transactionsTable.convertRowIndexToModel(currentRow);
-                    int transactionId = (int) transactionsTable.getModel().getValueAt(modelRow, 0);
-
-                    if ("Edit".equals(label)) {
-                        editTransaction(transactionId);
-                    } else if ("Delete".equals(label)) {
-                        deleteTransaction(transactionId);
-                    }
-                }
-                isPushed = false;
-                return label;
-            }
-        }
-
-        // Action column
-        TableColumn actionColumn = transactionsTable.getColumnModel().getColumn(6); // Adjust index as needed
-        actionColumn.setCellRenderer(new ButtonRenderer());
-        actionColumn.setCellEditor(new ButtonEditor(new JCheckBox()));
-
-      /*  // Chart panel
-        JPanel chartPanel = createChartPanel();
-
-        // Button panel
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+    private JPanel createButtonPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton refreshButton = new JButton("Refresh");
         refreshButton.addActionListener(e -> refreshData());
+        panel.add(refreshButton);
+        return panel;
+    }
 
-        buttonPanel.add(refreshButton);
+    private class ButtonRenderer extends JButton implements TableCellRenderer {
+        public ButtonRenderer() {
+            setOpaque(true);
+            setBorderPainted(false);
+        }
 
-        // Components
-        add(new JScrollPane(transactionsTable), BorderLayout.CENTER);
-        add(buttonPanel, BorderLayout.SOUTH);
-        add(chartPanel, BorderLayout.EAST);
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus, int row, int column) {
+            setText((value == null) ? "" : value.toString());
+            if (column == 6) {
+                setBackground(new Color(70, 130, 180));
+                setForeground(Color.WHITE);
+                setToolTipText("Edit this transaction");
+            } else {
+                setBackground(new Color(220, 80, 60));
+                setForeground(Color.WHITE);
+                setToolTipText("Delete this transaction");
+            }
+            return this;
+        }
+    }
+
+    private class ButtonEditor extends DefaultCellEditor {
+        private final JButton button;
+        private String label;
+        private int currentRow;
+        private int currentColumn;
+
+        public ButtonEditor(JCheckBox checkBox) {
+            super(checkBox);
+            button = new JButton();
+            button.setOpaque(true);
+            button.setFocusPainted(false);
+            button.addActionListener(e -> {
+                fireEditingStopped();
+                handleButtonAction();
+            });
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                                                     boolean isSelected, int row, int column) {
+            label = (value == null) ? "" : value.toString();
+            button.setText(label);
+            currentRow = row;
+            currentColumn = column;
+            return button;
+        }
+
+        private void handleButtonAction() {
+            int modelRow = transactionsTable.convertRowIndexToModel(currentRow);
+            int transactionId = (int) transactionsTable.getModel().getValueAt(modelRow, 0);
+            boolean isEditAction = currentColumn == 6;
+
+            if (isEditAction) {
+                editTransaction(transactionId);
+            } else {
+                deleteTransaction(transactionId);
+            }
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return label;
+        }
     }
 
     private void editTransaction(int transactionId) {
         Transaction transaction = DatabaseManager.getTransactionById(transactionId);
         if (transaction != null) {
-            JDialog editDialog = new JDialog((Frame)SwingUtilities.getWindowAncestor(this), "Edit Transaction", true);
-            editDialog.setLayout(new BorderLayout());
-            editDialog.setSize(400, 300);
+            Window parentWindow = SwingUtilities.getWindowAncestor(this);
+            EditTransactionDialog dialog = new EditTransactionDialog(
+                    parentWindow instanceof JFrame ? (JFrame) parentWindow : null,
+                    transaction);
+            dialog.setVisible(true);
 
-            // Create form similar to TransactionEntryPanel but with existing values
-            JPanel formPanel = new JPanel(new GridLayout(5, 2, 10, 10));
-
-            JComboBox<String> typeCombo = new JComboBox<>(new String[]{"Income", "Expense"});
-            typeCombo.setSelectedItem(transaction.getType().substring(0, 1).toUpperCase()
-                    + transaction.getType().substring(1));
-
-       */
+            if (dialog.isSaved()) {
+                boolean success = DatabaseManager.updateTransaction(transaction);
+                if (success) {
+                    refreshTable();
+                    JOptionPane.showMessageDialog(this, "Transaction updated successfully!");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Failed to update transaction", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
     }
 
+    private void deleteTransaction(int transactionId) {
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to delete this transaction?",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            if (DatabaseManager.deleteTransaction(transactionId)) {
+                refreshTable();
+                JOptionPane.showMessageDialog(this,
+                        "Transaction deleted successfully",
+                        "Success", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Failed to delete transaction",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
 
     private JPanel createChartPanel() {
         DefaultPieDataset dataset = new DefaultPieDataset();
-
         Map<String, Double> expensesByCategory = DatabaseManager.getExpensesByCategory(user.getId());
         expensesByCategory.forEach(dataset::setValue);
 
         JFreeChart chart = ChartFactory.createPieChart(
                 "Expense Breakdown",
                 dataset,
-                true, // legend
-                true, // tooltips
-                false // urls
-        );
+                true,
+                true,
+                false);
 
         ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setPreferredSize(new Dimension(400, 300));
@@ -155,8 +209,8 @@ public class ExpenseOverviewPanel extends JPanel {
     private void refreshTable() {
         DefaultTableModel model = (DefaultTableModel) transactionsTable.getModel();
         model.setRowCount(0);
-
         List<Transaction> transactions = DatabaseManager.getUserTransactions(user.getId());
+
         for (Transaction t : transactions) {
             model.addRow(new Object[]{
                     t.getId(),
@@ -164,13 +218,18 @@ public class ExpenseOverviewPanel extends JPanel {
                     t.getCategory(),
                     String.format("$%.2f", t.getAmount()),
                     t.getDate(),
-                    t.getDescription()
+                    t.getDescription(),
+                    "Edit",
+                    "Delete"
             });
         }
     }
 
     private void refreshData() {
         refreshTable();
-        ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.EAST).repaint();
+        remove(((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.EAST));
+        add(createChartPanel(), BorderLayout.EAST);
+        revalidate();
+        repaint();
     }
 }

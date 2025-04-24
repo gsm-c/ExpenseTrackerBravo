@@ -253,6 +253,61 @@ public class DatabaseManager {
         }
     }
 
+    public static Transaction getTransactionById(int id) {
+        String sql = "SELECT * FROM transactions WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return new Transaction(
+                        rs.getInt("id"),
+                        rs.getInt("user_id"),
+                        rs.getString("type"),
+                        rs.getString("category"),
+                        rs.getDouble("amount"),
+                        rs.getString("date"),
+                        rs.getString("description")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    public static boolean updateTransaction(Transaction transaction) {
+        String sql = "UPDATE transactions SET type = ?, category = ?, amount = ?, "
+                + "date = ?, description = ? WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, transaction.getType());
+            pstmt.setString(2, transaction.getCategory());
+            pstmt.setDouble(3, transaction.getAmount());
+            pstmt.setString(4, transaction.getDate());
+            pstmt.setString(5, transaction.getDescription());
+            pstmt.setInt(6, transaction.getId());
+
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean deleteTransaction(int id) {
+        String sql = "DELETE FROM transactions WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
 
 }
