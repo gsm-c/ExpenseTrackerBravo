@@ -111,13 +111,10 @@ public class LoginDialog extends JDialog {
         button.setBackground(bgColor);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(50, 100, 150)), // Outer border
-                BorderFactory.createEmptyBorder(10, 15, 10, 15) // Inner padding
-        ));
+        button.setBorder(BorderFactory.createEmptyBorder(10, 25, 10, 25)); // Consistent padding
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        button.setOpaque(true); // THIS IS CRUCIAL - makes background visible
-        button.setContentAreaFilled(true); // Ensure background is filled
+        button.setOpaque(true);  // Crucial for visibility
+        button.setContentAreaFilled(true); // Ensure background is painted
     }
 
     private void styleLinkButton(JButton button) {
@@ -126,6 +123,8 @@ public class LoginDialog extends JDialog {
         button.setContentAreaFilled(false);
         button.setBorderPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setOpaque(false); // For transparent background
+        button.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
     }
 
     private void performLogin(ActionEvent e) {
