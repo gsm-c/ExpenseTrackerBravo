@@ -433,6 +433,35 @@ public class DatabaseManager {
         }
     }
 
+    public static List<Transaction> getAllTransactions() {
+        List<Transaction> transactions = new ArrayList<>();
+        String sql = "SELECT * FROM transactions ORDER BY date DESC";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                transactions.add(new Transaction(
+                        rs.getInt("id"),
+                        rs.getInt("user_id"),
+                        rs.getString("type"),
+                        rs.getString("category"),
+                        rs.getDouble("amount"),
+                        rs.getString("date"),
+                        rs.getString("description")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transactions;
+    }
+
+
+
+
+
 
 
 }

@@ -4,6 +4,7 @@ import com.expensetracker.database.DatabaseManager;
 import com.expensetracker.models.User;
 import com.expensetracker.reports.UserReport;
 import com.expensetracker.reports.Report;
+import com.expensetracker.models.Transaction;
 
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -36,15 +37,25 @@ public class AdminDashboardPanel extends JPanel {
         add(tabbedPane, BorderLayout.CENTER);
     }
 
-    private class ButtonRenderer extends JButton implements TableCellRenderer {
+    private static class ButtonRenderer extends JButton implements TableCellRenderer {
         public ButtonRenderer() {
             setOpaque(true);
+            setBorderPainted(false);
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
             setText((value == null) ? "" : value.toString());
+
+            // Style the button
+            if ("Edit/Delete".equals(value)) {
+                setBackground(new Color(70, 130, 180)); // Blue
+                setForeground(Color.WHITE);
+            } else {
+                setBackground(table.getBackground());
+                setForeground(table.getForeground());
+            }
             return this;
         }
     }
@@ -120,7 +131,7 @@ public class AdminDashboardPanel extends JPanel {
         @Override
         public Object getCellEditorValue() {
             if (isPushed) {
-                // Handle button click action here
+
                 int selectedRow = usersTable.getSelectedRow();
                 if (selectedRow >= 0) {
                     int userId = (int) usersTable.getValueAt(selectedRow, 0);
@@ -179,20 +190,125 @@ public class AdminDashboardPanel extends JPanel {
         return panel;
     }
 
+    private class TransactionButtonEditor extends DefaultCellEditor {
+        protected JButton button;
+        private String label;
+        private boolean isPushed;
+        private int selectedRow;
+
+        public TransactionButtonEditor(JCheckBox checkBox) {
+            super(checkBox);
+            button = new JButton();
+            button.setOpaque(true);
+            button.addActionListener(e -> fireEditingStopped());
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                                                     boolean isSelected, int row, int column) {
+            label = (value == null) ? "" : value.toString();
+            button.setText(label);
+            isPushed = true;
+            selectedRow = table.convertRowIndexToModel(row);
+            return button;
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            if (isPushed) {
+                // popup menu for Edit/Delete
+                JPopupMenu popup = new JPopupMenu();
+                JMenuItem editItem = new JMenuItem("Edit");
+                JMenuItem deleteItem = new JMenuItem("Delete");
+
+                editItem.addActionListener(e -> {
+                    editTransaction(selectedRow);
+                    fireEditingStopped();
+                });
+
+                deleteItem.addActionListener(e -> {
+                    deleteTransaction(selectedRow);
+                    fireEditingStopped();
+                });
+
+                popup.add(editItem);
+                popup.add(deleteItem);
+
+                // popup near the button
+                popup.show(button, button.getWidth()/2, button.getHeight()/2);
+            }
+            isPushed = false;
+            return label;
+        }
+
+        @Override
+        public boolean stopCellEditing() {
+            isPushed = false;
+            return super.stopCellEditing();
+        }
+    }
+
     private JPanel createAllTransactionsPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
         // Table setup
-        String[] columns = {"ID", "User", "Type", "Category", "Amount", "Date", "Actions"};
-        DefaultTableModel model = new DefaultTableModel(columns, 0);
-        transactionsTable = new JTable(model);
+        String[] columns = {"ID", "User", "Type", "Category", "Amount", "Date", "Description", "Actions"};
+        DefaultTableModel model = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 7;
+            }
+        };
+
+        transactionsTable = new JTable(model) {
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 7;
+            }
+        };
+        transactionsTable.setRowHeight(30);
+
+        // action buttons column
+        TableColumn actionsColumn = transactionsTable.getColumnModel().getColumn(7);
+        actionsColumn.setCellRenderer(new ButtonRenderer());
+        actionsColumn.setCellEditor(new TransactionButtonEditor(new JCheckBox()));
+        actionsColumn.setPreferredWidth(100);
 
         // Load data
-        refreshTransactionsTable(model);
+        refreshTransactionsTable(model, -1); // -1 for all users
 
+        // filter controls
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JComboBox<String> userFilter = new JComboBox<>();
+        JButton applyFilter = new JButton("Filter");
+
+        // Populate user filter
+        List<User> users = DatabaseManager.getAllUsers();
+        userFilter.addItem("All Users");
+        for (User user : users) {
+            userFilter.addItem(user.getUsername() + " (ID: " + user.getId() + ")");
+        }
+
+        filterPanel.add(new JLabel("Filter by User:"));
+        filterPanel.add(userFilter);
+        filterPanel.add(applyFilter);
+
+        panel.add(filterPanel, BorderLayout.NORTH);
         panel.add(new JScrollPane(transactionsTable), BorderLayout.CENTER);
+
+        // Filter button action
+        applyFilter.addActionListener(e -> {
+            String selected = (String) userFilter.getSelectedItem();
+            int userId = selected.equals("All Users") ? -1 :
+                    Integer.parseInt(selected.split("\\(ID: ")[1].replace(")", ""));
+            refreshTransactionsTable(model, userId);
+        });
+
         return panel;
     }
+
+
 
     private JPanel createReportsPanel() {
         JPanel panel = new JPanel(new GridLayout(2, 1, 10, 10));
@@ -227,7 +343,7 @@ public class AdminDashboardPanel extends JPanel {
 
     private void refreshTransactionsTable(DefaultTableModel model) {
         model.setRowCount(0);
-        // Implement transaction loading from DatabaseManager
+
     }
 
     private void generateUserReport(ActionEvent e) {
@@ -330,7 +446,7 @@ public class AdminDashboardPanel extends JPanel {
             reportContent.append(String.format("Balance: $%.2f%n%n", userBalance));
         }
 
-        // 5. Add system summary
+        // system summary
         reportContent.append("SYSTEM WIDE SUMMARY\n");
         reportContent.append("=".repeat(50)).append("\n");
         reportContent.append(String.format("Total Income: $%.2f%n", totalSystemIncome));
@@ -338,13 +454,13 @@ public class AdminDashboardPanel extends JPanel {
         reportContent.append(String.format("Net Balance: $%.2f%n%n",
                 totalSystemIncome - totalSystemExpenses));
 
-        // 6. Add category breakdown
+        // category breakdown
         reportContent.append("EXPENSE CATEGORIES\n");
         reportContent.append("-".repeat(40)).append("\n");
         categoryTotals.forEach((category, total) ->
                 reportContent.append(String.format("- %-15s: $%.2f%n", category, total)));
 
-        // 7. Create and show report
+        // report
         Report combinedReport = new Report() {
             @Override
             public String getReportContent() {
@@ -353,6 +469,163 @@ public class AdminDashboardPanel extends JPanel {
         };
 
         new ReportViewerDialog(combinedReport).setVisible(true);
+    }
+
+    private void refreshTransactionsTable(DefaultTableModel model, int userId) {
+        model.setRowCount(0);
+        List<Transaction> transactions = userId == -1 ?
+                DatabaseManager.getAllTransactions() :
+                DatabaseManager.getUserTransactions(userId);
+
+        for (Transaction t : transactions) {
+            User user = DatabaseManager.getUserById(t.getUserId());
+            String username = user != null ? user.getUsername() : "Unknown";
+
+            model.addRow(new Object[]{
+                    t.getId(),
+                    username + " (ID: " + t.getUserId() + ")",
+                    t.getType(),
+                    t.getCategory(),
+                    t.getAmount(),
+                    t.getDate(),
+                    t.getDescription(),
+                    "Edit/Delete" // Action button text
+            });
+        }
+    }
+
+    private void editTransaction(int rowIndex) {
+        DefaultTableModel model = (DefaultTableModel) transactionsTable.getModel();
+        int transactionId = (int) model.getValueAt(rowIndex, 0);
+
+        Transaction transaction = DatabaseManager.getTransactionById(transactionId);
+        if (transaction == null) return;
+
+        // edit dialog
+        JDialog editDialog = new JDialog();
+        editDialog.setTitle("Edit Transaction #" + transactionId);
+        editDialog.setSize(450, 350);
+        editDialog.setLayout(new BorderLayout());
+        editDialog.setModal(true);
+
+        // Form panel
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Type
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        formPanel.add(new JLabel("Type:"), gbc);
+
+        gbc.gridx = 1;
+        JComboBox<String> typeCombo = new JComboBox<>(new String[]{"Income", "Expense"});
+        typeCombo.setSelectedItem(transaction.getType().substring(0, 1).toUpperCase() +
+                transaction.getType().substring(1));
+        formPanel.add(typeCombo, gbc);
+
+        // Category
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        formPanel.add(new JLabel("Category:"), gbc);
+
+        gbc.gridx = 1;
+        JComboBox<String> categoryCombo = new JComboBox<>(
+                new String[]{"Food", "Rent", "Transport", "Utilities", "Entertainment", "Salary", "Other"});
+        categoryCombo.setSelectedItem(transaction.getCategory());
+        formPanel.add(categoryCombo, gbc);
+
+        // Amount
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        formPanel.add(new JLabel("Amount:"), gbc);
+
+        gbc.gridx = 1;
+        JTextField amountField = new JTextField(String.valueOf(transaction.getAmount()));
+        formPanel.add(amountField, gbc);
+
+        // Date
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        formPanel.add(new JLabel("Date (YYYY-MM-DD):"), gbc);
+
+        gbc.gridx = 1;
+        JTextField dateField = new JTextField(transaction.getDate());
+        formPanel.add(dateField, gbc);
+
+        // Description
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        formPanel.add(new JLabel("Description:"), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridheight = 2;
+        JTextArea descArea = new JTextArea(transaction.getDescription(), 3, 20);
+        formPanel.add(new JScrollPane(descArea), gbc);
+
+        // Button panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton saveButton = new JButton("Save");
+        JButton cancelButton = new JButton("Cancel");
+
+        saveButton.addActionListener(e -> {
+            try {
+                transaction.setType(((String) typeCombo.getSelectedItem()).toLowerCase());
+                transaction.setCategory((String) categoryCombo.getSelectedItem());
+                transaction.setAmount(Double.parseDouble(amountField.getText()));
+                transaction.setDate(dateField.getText());
+                transaction.setDescription(descArea.getText());
+
+                if (DatabaseManager.updateTransaction(transaction)) {
+                    JOptionPane.showMessageDialog(editDialog,
+                            "Transaction updated successfully!",
+                            "Success", JOptionPane.INFORMATION_MESSAGE);
+                    refreshTransactionsTable(model, -1); // Refresh with all users
+                    editDialog.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(editDialog,
+                            "Failed to update transaction",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(editDialog,
+                        "Please enter a valid amount",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        cancelButton.addActionListener(e -> editDialog.dispose());
+        buttonPanel.add(cancelButton);
+        buttonPanel.add(saveButton);
+
+        editDialog.add(formPanel, BorderLayout.CENTER);
+        editDialog.add(buttonPanel, BorderLayout.SOUTH);
+        editDialog.setLocationRelativeTo(this);
+        editDialog.setVisible(true);
+    }
+
+    private void deleteTransaction(int rowIndex) {
+        DefaultTableModel model = (DefaultTableModel) transactionsTable.getModel();
+        int transactionId = (int) model.getValueAt(rowIndex, 0);
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to delete this transaction?",
+                "Confirm Delete", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            if (DatabaseManager.deleteTransaction(transactionId)) {
+                JOptionPane.showMessageDialog(this,
+                        "Transaction deleted successfully",
+                        "Success", JOptionPane.INFORMATION_MESSAGE);
+                refreshTransactionsTable(model, -1); // Refresh with all users
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Failed to delete transaction",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 
 
