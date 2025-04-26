@@ -23,6 +23,7 @@ public class ExpenseTrackerApp extends JFrame {
             tabbedPane.addTab("Admin Dashboard", new AdminDashboardPanel());
         }
 
+
         add(tabbedPane);
     }
 }

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 public class DatabaseManager {
     private static final String DB_URL = "jdbc:sqlite:expense_tracker.db";
@@ -27,13 +28,13 @@ public class DatabaseManager {
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "username TEXT UNIQUE NOT NULL," +
                     "password TEXT NOT NULL," +
-                    "role TEXT NOT NULL CHECK(role IN ('admin', 'regular')))");
+                    "role TEXT NOT NULL CHECK(role IN ('admin', 'user')))");
 
             stmt.execute("CREATE TABLE IF NOT EXISTS users (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "username TEXT UNIQUE NOT NULL," +  // UNIQUE ensures no duplicate usernames
                     "password TEXT NOT NULL," +
-                    "role TEXT NOT NULL CHECK(role IN ('admin', 'regular'))" +
+                    "role TEXT NOT NULL CHECK(role IN ('admin', 'user'))" +
                     ")");
 
             // Transactions table
@@ -146,7 +147,8 @@ public class DatabaseManager {
 
     public static double getMonthlyTotal(int userId, String type, int month, int year) {
         String sql = "SELECT SUM(amount) as total FROM transactions " +
-                "WHERE user_id = ? AND type = ? AND strftime('%m', date) = ? " +
+                "WHERE user_id = ? AND type = ? " +
+                "AND strftime('%m', date) = ? " +
                 "AND strftime('%Y', date) = ?";
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
@@ -154,7 +156,7 @@ public class DatabaseManager {
 
             pstmt.setInt(1, userId);
             pstmt.setString(2, type);
-            pstmt.setString(3, String.format("%02d", month));
+            pstmt.setString(3, String.format("%02d", month)); // Ensure 2-digit month
             pstmt.setString(4, String.valueOf(year));
 
             ResultSet rs = pstmt.executeQuery();
@@ -165,6 +167,35 @@ public class DatabaseManager {
             e.printStackTrace();
         }
         return 0.0;
+    }
+
+    public static List<Transaction> getRecentTransactions(int userId, int limit) {
+        List<Transaction> transactions = new ArrayList<>();
+        String sql = "SELECT * FROM transactions WHERE user_id = ? " +
+                "ORDER BY date DESC LIMIT ?";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, userId);
+            pstmt.setInt(2, limit);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                transactions.add(new Transaction(
+                        rs.getInt("id"),
+                        rs.getInt("user_id"),
+                        rs.getString("type"),
+                        rs.getString("category"),
+                        rs.getDouble("amount"),
+                        rs.getString("date"),
+                        rs.getString("description")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transactions;
     }
 
     public static List<User> getAllUsers() {
@@ -253,6 +284,86 @@ public class DatabaseManager {
         }
     }
 
+    public static Map<String, Double> getMonthlySummaries(int userId) {
+        Map<String, Double> monthlySummaries = new LinkedHashMap<>(); // Preserves insertion order
+
+        // Get current date info
+        LocalDate now = LocalDate.now();
+        int currentYear = now.getYear();
+        Month currentMonth = now.getMonth();
+
+        // Get data for last 6 months
+        for (int i = 5; i >= 0; i--) {
+            LocalDate date = now.minusMonths(i);
+            String monthYear = date.getMonth().toString() + " " + date.getYear();
+
+            double income = getMonthlyTotal(userId, "income", date.getMonthValue(), date.getYear());
+            double expenses = getMonthlyTotal(userId, "expense", date.getMonthValue(), date.getYear());
+            double balance = income - expenses;
+
+            monthlySummaries.put(monthYear, balance);
+        }
+
+        return monthlySummaries;
+    }
+
+    public static UserReport generateUserReport(int userId) {
+        User user = getUserById(userId);
+        if (user == null) return null;
+
+        double totalBalance = getTotalBalance(userId);
+        Map<String, Double> monthlySummaries = getMonthlySummaries(userId);
+        List<Transaction> recentTransactions = getRecentTransactions(userId, 10); // Last 10 transactions
+
+        return new UserReport(user, totalBalance, monthlySummaries, recentTransactions);
+    }
+
+    public static User getUserById(int userId) {
+        String sql = "SELECT id, username, role FROM users WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return new User(
+                        rs.getInt("id"),
+                        rs.getString("username"),
+                        rs.getString("role")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static double getTotalBalance(int userId) {
+        double income = getTotal(userId, "income");
+        double expenses = getTotal(userId, "expense");
+        return income - expenses;
+    }
+
+    public static double getTotal(int userId, String type) {
+        String sql = "SELECT SUM(amount) as total FROM transactions WHERE user_id = ? AND type = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, userId);
+            pstmt.setString(2, type);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getDouble("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
+
+
     public static Transaction getTransactionById(int id) {
         String sql = "SELECT * FROM transactions WHERE id = ?";
         try (Connection conn = DriverManager.getConnection(DB_URL);
@@ -301,6 +412,20 @@ public class DatabaseManager {
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean updateUserRole(int userId, String newRole) {
+        String sql = "UPDATE users SET role = ? WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, newRole);
+            pstmt.setInt(2, userId);
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
