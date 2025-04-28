@@ -247,7 +247,7 @@ public class ExpenseTrackerApp extends JFrame {
                 "lilysarabia@csus.edu",
                 "annetruong@csus.edu",
                 "aapolonio-flores@csus.edu",
-                "@csus.edu",
+                "alexisacuna@csus.edu",
                 "@csus.edu"
         };
 
