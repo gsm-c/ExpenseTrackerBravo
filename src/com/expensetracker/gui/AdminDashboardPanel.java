@@ -48,7 +48,7 @@ public class AdminDashboardPanel extends JPanel {
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
             setText((value == null) ? "" : value.toString());
 
-            // Style the button
+            // Style button
             if ("Edit/Delete".equals(value)) {
                 setBackground(new Color(70, 130, 180)); // Blue
                 setForeground(Color.WHITE);
@@ -401,7 +401,7 @@ public class AdminDashboardPanel extends JPanel {
     }
 
     private void generateCombinedReport(ActionEvent e) {
-        // 1. Get all users from database
+        // get users
         List<User> allUsers = DatabaseManager.getAllUsers();
         if (allUsers.isEmpty()) {
             JOptionPane.showMessageDialog(this,
@@ -411,34 +411,34 @@ public class AdminDashboardPanel extends JPanel {
             return;
         }
 
-        // 2. Prepare report data
+        // get report
         StringBuilder reportContent = new StringBuilder();
         reportContent.append("COMBINED FINANCIAL REPORT\n");
         reportContent.append("=".repeat(50)).append("\n\n");
         reportContent.append(String.format("Generated on: %s%n%n", LocalDate.now()));
 
-        // 3. System-wide totals
+        // get system data
         double totalSystemIncome = 0;
         double totalSystemExpenses = 0;
         Map<String, Double> categoryTotals = new HashMap<>();
 
-        // 4. Process each user's data
+        // get user data
         for (User user : allUsers) {
             // Get user's financial summary
             double userIncome = DatabaseManager.getTotal(user.getId(), "income");
             double userExpenses = DatabaseManager.getTotal(user.getId(), "expense");
             double userBalance = userIncome - userExpenses;
 
-            // Add to system totals
+            // add to system data
             totalSystemIncome += userIncome;
             totalSystemExpenses += userExpenses;
 
-            // Get user's expense categories
+            // get expenses by category
             Map<String, Double> userCategories = DatabaseManager.getExpensesByCategory(user.getId());
             userCategories.forEach((category, amount) ->
                     categoryTotals.merge(category, amount, Double::sum));
 
-            // Add user section to report
+            // add data to report
             reportContent.append(String.format("USER: %s (ID: %d)%n", user.getUsername(), user.getId()));
             reportContent.append("-".repeat(40)).append("\n");
             reportContent.append(String.format("Income: $%.2f%n", userIncome));

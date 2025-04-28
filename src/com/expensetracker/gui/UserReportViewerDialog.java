@@ -26,22 +26,22 @@ public class UserReportViewerDialog extends JDialog {
 
         JTabbedPane tabbedPane = new JTabbedPane();
 
-        // Summary tab
+        // summary tab
         JTextArea summaryArea = new JTextArea(report.getReportContent());
         summaryArea.setEditable(false);
         tabbedPane.addTab("Summary", new JScrollPane(summaryArea));
 
-        // Transactions tab
+        // transactions tab
         JTable transactionsTable = createTransactionsTable(report);
         tabbedPane.addTab("Transactions", new JScrollPane(transactionsTable));
 
-        // Charts tab
+        // charts tab
         JPanel chartPanel = createChartPanel(report);
         tabbedPane.addTab("Charts", chartPanel);
 
         add(tabbedPane, BorderLayout.CENTER);
 
-        // Close button
+        // close button
         JButton closeButton = new JButton("Close");
         closeButton.addActionListener(e -> dispose());
 
@@ -59,7 +59,7 @@ public class UserReportViewerDialog extends JDialog {
             }
         };
 
-        // Populate table
+        // populate table
         for (Transaction t : report.getRecentTransactions()) {
             model.addRow(new Object[]{
                     t.getDate(),
@@ -73,18 +73,18 @@ public class UserReportViewerDialog extends JDialog {
         JTable table = new JTable(model);
         table.setAutoCreateRowSorter(true);
 
-        // Fix the renderer implementation
+        // renderer implementation
         table.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(
                     JTable table, Object value, boolean isSelected,
                     boolean hasFocus, int row, int column) {
 
-                // Call parent implementation first
+
                 Component c = super.getTableCellRendererComponent(
                         table, value, isSelected, hasFocus, row, column);
 
-                // Format currency
+                // format currency
                 if (value instanceof Number) {
                     setText(String.format("$%.2f", ((Number)value).doubleValue()));
                     setHorizontalAlignment(SwingConstants.RIGHT);
@@ -99,11 +99,11 @@ public class UserReportViewerDialog extends JDialog {
     private JPanel createChartPanel(UserReport report) {
         JTabbedPane chartTabs = new JTabbedPane();
 
-        // 1. Pie Chart
+        // pie Chart
         DefaultPieDataset pieDataset = new DefaultPieDataset();
         Map<String, Double> expensesByCategory = new HashMap<>();
 
-        // Calculate expenses by category
+        // calculate expenses by category
         for (Transaction t : report.getRecentTransactions()) {
             if ("expense".equalsIgnoreCase(t.getType())) {
                 String category = t.getCategory();
@@ -115,7 +115,7 @@ public class UserReportViewerDialog extends JDialog {
             }
         }
 
-        // Add to dataset (using explicit double values)
+        // add to data
         for (Map.Entry<String, Double> entry : expensesByCategory.entrySet()) {
             pieDataset.setValue(entry.getKey(), entry.getValue());
         }
@@ -124,7 +124,7 @@ public class UserReportViewerDialog extends JDialog {
                 "Expense Categories", pieDataset, true, true, false);
         chartTabs.addTab("Expenses", new ChartPanel(pieChart));
 
-        // 2. Monthly Trends Chart
+        // monthly chart
         DefaultCategoryDataset lineDataset = new DefaultCategoryDataset();
         report.getMonthlySummaries().forEach((month, balance) -> {
             lineDataset.addValue(balance, "Balance", month);
@@ -142,7 +142,7 @@ public class UserReportViewerDialog extends JDialog {
     private ChartPanel createExpensePieChart(UserReport report) {
         DefaultPieDataset dataset = new DefaultPieDataset();
 
-        // Get expense totals by category
+        // expense by category
         Map<String, Double> expensesByCategory = new HashMap<>();
         for (Transaction t : report.getRecentTransactions()) {
             if ("expense".equalsIgnoreCase(t.getType())) {
@@ -150,10 +150,10 @@ public class UserReportViewerDialog extends JDialog {
             }
         }
 
-        // Add to dataset
+        // add to dataset
         expensesByCategory.forEach(dataset::setValue);
 
-        // Create chart
+        // create chart
         JFreeChart chart = ChartFactory.createPieChart(
                 "Expense Categories",
                 dataset,
@@ -165,12 +165,12 @@ public class UserReportViewerDialog extends JDialog {
     private ChartPanel createMonthlyTrendChart(UserReport report) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
-        // Add monthly data
+        // add monthly data
         report.getMonthlySummaries().forEach((month, balance) -> {
             dataset.addValue(balance, "Balance", month);
         });
 
-        // Create chart
+        // create chart
         JFreeChart chart = ChartFactory.createLineChart(
                 "Monthly Balance Trend",
                 "Month",

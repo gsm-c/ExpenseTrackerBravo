@@ -24,12 +24,12 @@ public class User {
         return role;
     }
 
-    // Getters and setters
+
     public boolean isAdmin() {
         return "admin".equals(role);
     }
 
-    // For password verification only
+    // password verification
     public boolean checkPassword(String password) {
         return this.password.equals(password);
     }

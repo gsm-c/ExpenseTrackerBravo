@@ -33,14 +33,14 @@ public class UserReport extends Report {
         content.append(String.format("Generated on: %s%n%n",
                 generatedDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
 
-        // User info
+        // user info
         content.append("USER INFORMATION\n");
         content.append("-".repeat(50)).append("\n");
         content.append(String.format("Username: %s%n", user.getUsername()));
         content.append(String.format("Role: %s%n", user.getRole()));
         content.append(String.format("Current Balance: $%.2f%n%n", totalBalance));
 
-        // Monthly summaries
+        // monthly summaries
         if (monthlySummaries != null && !monthlySummaries.isEmpty()) {
             content.append("MONTHLY SUMMARIES (Last 6 Months)\n");
             content.append("-".repeat(50)).append("\n");
@@ -50,7 +50,7 @@ public class UserReport extends Report {
             content.append("\n");
         }
 
-        // Recent transactions
+        // recent transactions
         if (recentTransactions != null && !recentTransactions.isEmpty()) {
             content.append("RECENT TRANSACTIONS (Last 10)\n");
             content.append("-".repeat(50)).append("\n");
@@ -67,7 +67,7 @@ public class UserReport extends Report {
         return content.toString();
     }
 
-    // Getters
+    // getters
     public User getUser() { return user; }
     public double getTotalBalance() { return totalBalance; }
     public Map<String, Double> getMonthlySummaries() { return monthlySummaries; }

@@ -7,6 +7,8 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
 import java.util.Properties;
 import javax.mail.*;
 
@@ -113,25 +115,261 @@ public class ExpenseTrackerApp extends JFrame {
 
     private void showAboutDialog() {
         JDialog dialog = new JDialog(this, "Team Qualifications", true);
-        dialog.setSize(500, 400);
+        dialog.setSize(600, 450);
 
         JTabbedPane tabs = new JTabbedPane();
-        // Add team member tabs as before
+
+
+        tabs.addTab("Gurpaul Mann", createMemberPanel(
+                "Experience:\n- Java and C++ development\n- Database management\n\nSkills:\n- Java, SQL, C++\n"
+        ));
+
+        tabs.addTab("Isaiah Harrell", createMemberPanel(
+                "Experience:\n- Java and C++ development\n- Database management\n\nSkills:\n- Java, SQL, C++\n"
+        ));
+
+        tabs.addTab("Nizar Youssef", createMemberPanel(
+                "Experience:\n- Java and C++ development\n- Database management\n\nSkills:\n- Java, SQL, C++\n"
+        ));
+
+        tabs.addTab("Lily Sarabia", createMemberPanel(
+                "Experience:\n- Java and C++ development\n- Database management\n\nSkills:\n- Java, SQL, C++\n"
+        ));
+
+        tabs.addTab("Anne Truong", createMemberPanel(
+                "Experience:\n- Java and C++ development\n- Database management\n\nSkills:\n- Java, SQL, C++\n"
+        ));
+
+        tabs.addTab("Alexis Acuna", createMemberPanel(
+                "Experience:\n- Java and C++ development\n- Database management\n\nSkills:\n- Java, SQL, C++\n"
+        ));
+        tabs.addTab("Dakota Whidden", createMemberPanel(
+                "Experience:\n- Java and C++ development\n- Database management\n\nSkills:\n- Java, SQL, C++\n"
+        ));
+        tabs.addTab("Alexander Flores", createMemberPanel(
+                "Experience:\n- Java and C++ development\n- Database management\n\nSkills:\n- Java, SQL, C++\n"
+        ));
+
         dialog.add(tabs);
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
 
+    // panel for members
+    private JPanel createMemberPanel(String description) {
+        JPanel panel = new JPanel(new BorderLayout());
+        JTextArea textArea = new JTextArea(description);
+        textArea.setWrapStyleWord(true);
+        textArea.setLineWrap(true);
+        textArea.setEditable(false);
+        textArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        textArea.setMargin(new Insets(10, 10, 10, 10));
+
+        panel.add(new JScrollPane(textArea), BorderLayout.CENTER);
+        return panel;
+    }
+
+
     private void showCreditsDialog() {
         JDialog dialog = new JDialog(this, "Team Roles", true);
-        dialog.setSize(600, 450);
+        dialog.setSize(800, 600);
+        dialog.setLayout(new BorderLayout());
 
-        JPanel gridPanel = new JPanel(new GridLayout(0, 2, 10, 10));
-        // Add team member cards as before
-        dialog.add(new JScrollPane(gridPanel));
+
+        JPanel gridPanel = new JPanel(new GridLayout(0, 2, 20, 20));
+        gridPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+
+        gridPanel.add(createTeamCard(
+                "Dakota Whidden",
+                "resources/dakota.png",
+                "Project Manager",
+                new String[] {
+                        "• Managed team meetings",
+                        "• Documented team ideas",
+                        "• Helped with programming"
+                }
+        ));
+
+
+        gridPanel.add(createTeamCard(
+                "Lily Sarabia",
+                "resources/lily.jpg",
+                "Designer",
+                new String[] {
+                        "• Helped design UML",
+                        "• Helped design Use-Case Diagram",
+                        "• Helped with programming"
+                }
+        ));
+
+
+        gridPanel.add(createTeamCard(
+                "Alexis Acuna",
+                "resources/alexis.jpg",
+                "Programmer",
+                new String[] {
+                        "• Helped with database",
+                        "• Helped with login",
+                        "• Helped with GUI"
+                }
+        ));
+
+
+        gridPanel.add(createTeamCard(
+                "Nizar Youssef",
+                "resources/nizar.jpg",
+                "Programmer",
+                new String[] {
+                        "• Helped with login",
+                        "• Helped with database",
+                        "• Helped with programming"
+                }
+        ));
+
+        gridPanel.add(createTeamCard(
+                "Gurpaul Mann",
+                "resources/gurpaul.png",
+                "Designer",
+                new String[] {
+                        "• Helped with UML",
+                        "• Helped with Use-Case diagram",
+                        "• Helped with programming"
+                }
+        ));
+
+        gridPanel.add(createTeamCard(
+                "Alexander Flores",
+                "resources/alexander.jpg",
+                "Quality Control",
+                new String[] {
+                        "• Helped with login",
+                        "• Helped with database",
+                        "• Helped with testing"
+                }
+        ));
+
+        gridPanel.add(createTeamCard(
+                "Anne Truong",
+                "resources/anne.jpg",
+                "Programmer",
+                new String[] {
+                        "• Helped with login",
+                        "• Helped with database",
+                        "• Helped with programming"
+                }
+        ));
+
+        gridPanel.add(createTeamCard(
+                "Isaiah Harrell",
+                "resources/isaiah.jpg",
+                "Analyst",
+                new String[] {
+                        "• Helped with design",
+                        "• Helped with database",
+                        "• Helped with analysis"
+                }
+        ));
+
+        JScrollPane scrollPane = new JScrollPane(gridPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        dialog.add(scrollPane, BorderLayout.CENTER);
+
+        // close button
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> dialog.dispose());
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(closeButton);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
+
+    private JPanel createTeamCard(String name, String imagePath, String role, String[] contributions) {
+        JPanel card = new JPanel(new BorderLayout(10, 10));
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
+        card.setBackground(Color.WHITE);
+
+        // header
+        JPanel headerPanel = new JPanel(new BorderLayout(15, 0));
+        headerPanel.setBackground(Color.WHITE);
+
+        // headshot
+        ImageIcon originalIcon = new ImageIcon(imagePath);
+        Image scaledImage = originalIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+        JLabel imageLabel = new JLabel(new ImageIcon(scaledImage));
+        headerPanel.add(imageLabel, BorderLayout.WEST);
+
+        // Name and role
+        JPanel infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+        infoPanel.setBackground(Color.WHITE);
+
+        JLabel nameLabel = new JLabel(name);
+        nameLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+
+        JLabel roleLabel = new JLabel(role);
+        roleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        roleLabel.setForeground(new Color(70, 130, 180)); // Blue color
+
+        infoPanel.add(nameLabel);
+        infoPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        infoPanel.add(roleLabel);
+
+        headerPanel.add(infoPanel, BorderLayout.CENTER);
+
+        card.add(headerPanel, BorderLayout.NORTH);
+
+        // Contributions list
+        JPanel contributionsPanel = new JPanel();
+        contributionsPanel.setLayout(new BoxLayout(contributionsPanel, BoxLayout.Y_AXIS));
+        contributionsPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+        contributionsPanel.setBackground(Color.WHITE);
+
+        JLabel contributionsTitle = new JLabel("Key Contributions:");
+        contributionsTitle.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        contributionsTitle.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+        contributionsPanel.add(contributionsTitle);
+
+        for (String contribution : contributions) {
+            JLabel item = new JLabel(contribution);
+            item.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            item.setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 0));
+            contributionsPanel.add(item);
+        }
+
+        card.add(contributionsPanel, BorderLayout.CENTER);
+
+        return card;
+    }
+
+
+    private ImageIcon createCircularImageIcon(String imagePath, int diameter) {
+        try {
+            ImageIcon originalIcon = new ImageIcon(imagePath);
+            Image originalImage = originalIcon.getImage();
+            BufferedImage bufferedImage = new BufferedImage(diameter, diameter, BufferedImage.TYPE_INT_ARGB);
+
+            Graphics2D g2 = bufferedImage.createGraphics();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setClip(new Ellipse2D.Float(0, 0, diameter, diameter));
+
+
+            g2.drawImage(originalImage.getScaledInstance(diameter, diameter, Image.SCALE_SMOOTH), 0, 0, diameter, diameter, null);
+            g2.dispose();
+
+            return new ImageIcon(bufferedImage);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
 
     private void showContactDialog() {
         JDialog dialog = new JDialog(this, "Contact Us", true);
@@ -248,7 +486,7 @@ public class ExpenseTrackerApp extends JFrame {
                 "annetruong@csus.edu",
                 "aapolonio-flores@csus.edu",
                 "alexisacuna@csus.edu",
-                "@csus.edu"
+                "dwhidden@csus.edu"
         };
 
         String subject = "New Contact Request from Expense Tracker App";

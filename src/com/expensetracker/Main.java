@@ -7,7 +7,7 @@ import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-        // Initialize database
+        // initialize database
         DatabaseManager.initializeDatabase();
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -17,7 +17,7 @@ public class Main {
 
         setModernLook();
 
-        // Create and show login dialog
+        // show login dialog
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame();
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

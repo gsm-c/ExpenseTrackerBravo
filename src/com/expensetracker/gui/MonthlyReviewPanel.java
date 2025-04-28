@@ -23,7 +23,7 @@ public class MonthlyReviewPanel extends JPanel {
         setLayout(new GridLayout(6, 2, 10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Initialize components
+        // initialize components
         monthComboBox = new JComboBox<>(Month.values());
         yearComboBox = new JComboBox<>(getLastFiveYears());
 
@@ -34,11 +34,11 @@ public class MonthlyReviewPanel extends JPanel {
         JButton generateButton = new JButton("Generate Report");
         JButton refreshButton = new JButton("Refresh");
 
-        // Set current month/year
+        // get current month/year
         monthComboBox.setSelectedItem(LocalDate.now().getMonth());
         yearComboBox.setSelectedItem(LocalDate.now().getYear());
 
-        // Add components
+        // add components
         add(new JLabel("Month:"));
         add(monthComboBox);
         add(new JLabel("Year:"));
@@ -52,13 +52,13 @@ public class MonthlyReviewPanel extends JPanel {
         add(generateButton);
         add(refreshButton);
 
-        // Event handling
+        // event handling
         monthComboBox.addActionListener(e -> updateSummary());
         yearComboBox.addActionListener(e -> updateSummary());
         refreshButton.addActionListener(e -> updateSummary());
         generateButton.addActionListener(e -> generateReport());
 
-        // Initial data load
+        // initial data load
         updateSummary();
     }
 

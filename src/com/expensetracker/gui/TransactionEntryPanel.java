@@ -28,25 +28,25 @@ public class TransactionEntryPanel extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // Form panel
+        // form panel
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
 
-        // Transaction type
+        // transaction type
         addFormField(formPanel, "Type:",
                 typeComboBox = new JComboBox<>(new String[]{"Income", "Expense"}));
 
-        // Category
+        // category
         addFormField(formPanel, "Category:",
                 categoryComboBox = new JComboBox<>(
                         new String[]{"Food", "Rent", "Transport", "Utilities", "Entertainment", "Salary", "Other"}));
 
-        // Amount
+        // amount
         addFormField(formPanel, "Amount ($):", amountField = new JTextField());
 
-        // Date field with date picker
+        // date field with date picker
         addFormField(formPanel, "Date:", dateField = new JFormattedTextField());
-        dateField.setValue(LocalDate.now()); // Default to today
+        dateField.setValue(LocalDate.now());
         dateField.setColumns(10);
         JButton datePickerButton = new JButton("📅");
         datePickerButton.addActionListener(e -> showDatePicker());
@@ -55,11 +55,11 @@ public class TransactionEntryPanel extends JPanel {
         datePanel.add(datePickerButton, BorderLayout.EAST);
         formPanel.add(datePanel);
 
-        // Description
+        // description
         addFormField(formPanel, "Description:",
                 descriptionArea = new JTextArea(3, 20));
 
-        // Submit button
+        // submit button
         submitButton = new JButton("Add Transaction");
         submitButton.addActionListener(this::addTransaction);
 
@@ -81,7 +81,7 @@ public class TransactionEntryPanel extends JPanel {
         dateDialog.setModal(true);
         dateDialog.setSize(300, 250);
 
-        JCalendar calendar = new JCalendar(); // Requires JCalendar library
+        JCalendar calendar = new JCalendar();
         calendar.addPropertyChangeListener(e -> {
             if ("calendar".equals(e.getPropertyName())) {
                 dateField.setValue(calendar.getDate());

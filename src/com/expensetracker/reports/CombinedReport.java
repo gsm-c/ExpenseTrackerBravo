@@ -31,13 +31,13 @@ public class CombinedReport extends Report {
         content.append("=".repeat(50)).append("\n\n");
         content.append(String.format("Generated on: %s%n%n",
                 generatedDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
-        // System overview
+        // system overview
         content.append("SYSTEM OVERVIEW\n");
         content.append("-".repeat(50)).append("\n");
         content.append(String.format("Total Users: %d%n", totalUsers));
         content.append(String.format("System-wide Balance: $%.2f%n%n", systemTotalBalance));
 
-        // Category distribution
+        // category distribution
         if (categoryDistribution != null && !categoryDistribution.isEmpty()) {
             content.append("CATEGORY DISTRIBUTION\n");
             content.append("-".repeat(50)).append("\n");
@@ -46,7 +46,7 @@ public class CombinedReport extends Report {
             });
             content.append("\n");
         }
-        // Top users
+        // top users
         if (topUsers != null && !topUsers.isEmpty()) {
             content.append("TOP USERS BY TRANSACTION COUNT\n");
             content.append("-".repeat(50)).append("\n");
@@ -59,7 +59,7 @@ public class CombinedReport extends Report {
         content.append("\n").append("=".repeat(50)).append("\n");
         return content.toString();
     }
-    // Getters
+    // getters
     public int getTotalUsers() { return totalUsers; }
     public double getSystemTotalBalance() { return systemTotalBalance; }
     public Map<String, Double> getCategoryDistribution() { return categoryDistribution; }

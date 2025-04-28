@@ -33,14 +33,14 @@ public class MonthlyReport extends Report {
         content.append(String.format("Generated on: %s%n%n",
                 generatedDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
 
-        // Summary section
+        // summary
         content.append("SUMMARY\n");
         content.append("-".repeat(50)).append("\n");
         content.append(String.format("Total Income: $%.2f%n", totalIncome));
         content.append(String.format("Total Expenses: $%.2f%n", totalExpenses));
         content.append(String.format("Net Balance: $%.2f%n%n", totalIncome - totalExpenses));
 
-        // Expenses breakdown
+        // expense breakdown
         if (expensesByCategory != null && !expensesByCategory.isEmpty()) {
             content.append("EXPENSE BREAKDOWN\n");
             content.append("-".repeat(50)).append("\n");
@@ -54,7 +54,7 @@ public class MonthlyReport extends Report {
         return content.toString();
     }
 
-    // Getters
+    // getters
     public double getTotalIncome() { return totalIncome; }
     public double getTotalExpenses() { return totalExpenses; }
     public Map<String, Double> getExpensesByCategory() { return expensesByCategory; }

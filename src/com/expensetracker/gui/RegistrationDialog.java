@@ -19,12 +19,12 @@ public class RegistrationDialog extends JDialog {
         setResizable(false);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        // Main panel with border layout
+        // main panel
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         mainPanel.setBackground(new Color(245, 245, 245));
 
-        // Header panel
+        // header panel
         JPanel headerPanel = new JPanel();
         headerPanel.setBackground(new Color(245, 245, 245));
         JLabel titleLabel = new JLabel("CREATE ACCOUNT");
@@ -32,7 +32,7 @@ public class RegistrationDialog extends JDialog {
         titleLabel.setForeground(new Color(70, 130, 180));
         headerPanel.add(titleLabel);
 
-        // Form panel with box layout
+        // form panel
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
         formPanel.setBorder(BorderFactory.createCompoundBorder(
@@ -42,12 +42,12 @@ public class RegistrationDialog extends JDialog {
         formPanel.setBackground(Color.WHITE);
         formPanel.setMaximumSize(new Dimension(350, Integer.MAX_VALUE));
 
-        // Add form fields
+        // form fields
         addFormField(formPanel, "Username:", usernameField = new JTextField());
         addFormField(formPanel, "Password:", passwordField = new JPasswordField());
         addFormField(formPanel, "Confirm Password:", confirmPasswordField = new JPasswordField());
 
-        JPanel buttonPanel = new JPanel(new GridBagLayout()); // Better layout control
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
         buttonPanel.setBackground(Color.WHITE);
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
@@ -58,17 +58,17 @@ public class RegistrationDialog extends JDialog {
         gbc.insets = new Insets(5, 0, 5, 0);
 
         registerButton = new JButton("Register");
-        styleButton(registerButton, new Color(70, 130, 180)); // Blue color
+        styleButton(registerButton, new Color(70, 130, 180));
         registerButton.addActionListener(this::registerUser);
         buttonPanel.add(registerButton, gbc);
 
 
 
-        // Add button panel to form
+        // button to form panel
         formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         formPanel.add(buttonPanel);
 
-        // Bottom panel with login link
+        // bottom panel with login link
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         bottomPanel.setBackground(new Color(245, 245, 245));
         loginButton = new JButton("Already have an account? Login");
@@ -76,7 +76,7 @@ public class RegistrationDialog extends JDialog {
         loginButton.addActionListener(e -> returnToLogin());
         bottomPanel.add(loginButton);
 
-        // Add all components to main panel
+        // add to main panel
         mainPanel.add(headerPanel, BorderLayout.NORTH);
         mainPanel.add(formPanel, BorderLayout.CENTER);
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
@@ -108,8 +108,8 @@ public class RegistrationDialog extends JDialog {
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createEmptyBorder(10, 25, 10, 25));
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        button.setOpaque(true);  // THIS IS CRUCIAL
-        button.setContentAreaFilled(true); // Ensure background is painted
+        button.setOpaque(true);
+        button.setContentAreaFilled(true);
     }
 
     private void styleLinkButton(JButton button) {
@@ -136,7 +136,7 @@ public class RegistrationDialog extends JDialog {
         String password = new String(passwordField.getPassword());
         String confirmPassword = new String(confirmPasswordField.getPassword());
 
-        // Validation
+        // validation
         if (username.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "Username and password cannot be empty",
@@ -165,7 +165,7 @@ public class RegistrationDialog extends JDialog {
             return;
         }
 
-        // Create user
+        // create user
         if (DatabaseManager.createUser(username, password, "regular")) {
             JOptionPane.showMessageDialog(this,
                     "Account created successfully!\nYou can now login.",

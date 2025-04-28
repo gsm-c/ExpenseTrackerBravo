@@ -14,9 +14,9 @@ public class Transaction {
 
     public Transaction(int userId, String type, String category,
                        double amount, String date, String description) {
-        this(-1, userId, type, category, amount, date, description); // -1 for new unsaved transactions
+        this(-1, userId, type, category, amount, date, description);
     }
-    // Full constructor
+    // constructor
     public Transaction(int id, int userId, String type, String category,
                        double amount, String date, String description) {
         this.id = id;
@@ -28,7 +28,7 @@ public class Transaction {
         this.description = description;
     }
 
-    // Getters (required for DatabaseManager)
+    // getters
     public int getId() { return id; }
     public void setId( int id) { this.id = id;}
     public int getUserId() { return userId; }
@@ -44,7 +44,7 @@ public class Transaction {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    // toString() for debugging
+
     @Override
     public String toString() {
         return "Transaction{" +
@@ -58,7 +58,7 @@ public class Transaction {
                 '}';
     }
 
-    // equals() and hashCode() for comparison
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -224,7 +224,7 @@ public class DatabaseManager {
         double expenses = getMonthlyTotal(userId, "expense", month, year);
         Map<String, Double> expensesByCategory = getMonthlyExpensesByCategory(userId, month, year);
 
-        // Remove title parameter if constructor doesn't expect it
+
         return new MonthlyReport(income, expenses, expensesByCategory, month, year);
     }
 
@@ -274,7 +274,7 @@ public class DatabaseManager {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, username);
-            pstmt.setString(2, password); // In production, use password hashing!
+            pstmt.setString(2, password);
             pstmt.setString(3, role);
 
             return pstmt.executeUpdate() > 0;
@@ -285,9 +285,9 @@ public class DatabaseManager {
     }
 
     public static Map<String, Double> getMonthlySummaries(int userId) {
-        Map<String, Double> monthlySummaries = new LinkedHashMap<>(); // Preserves insertion order
+        Map<String, Double> monthlySummaries = new LinkedHashMap<>();
 
-        // Get current date info
+        // current date info
         LocalDate now = LocalDate.now();
         int currentYear = now.getYear();
         Month currentMonth = now.getMonth();

@@ -17,21 +17,21 @@ public class LoginDialog extends JDialog {
         setResizable(false);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        // Main panel with border layout
+        // main panel with border layout
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         mainPanel.setBackground(new Color(245, 245, 245));
 
-        // Header with icon and title
+        // header with icon and title
         JPanel headerPanel = new JPanel();
         headerPanel.setBackground(new Color(245, 245, 245));
-        headerPanel.add(new JLabel(new ImageIcon("resources/logo.png"))); // Add your logo
+        headerPanel.add(new JLabel(new ImageIcon("resources/logo.png")));
         JLabel titleLabel = new JLabel("EXPENSE TRACKER");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
         titleLabel.setForeground(new Color(70, 130, 180));
         headerPanel.add(titleLabel);
 
-        // Form panel with card-like appearance
+        // form panel
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
         formPanel.setBorder(
@@ -42,32 +42,32 @@ public class LoginDialog extends JDialog {
         );
         formPanel.setBackground(Color.WHITE);
 
-        // Username field
+        // username field
         JLabel userLabel = new JLabel("Username:");
         userLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        userLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Center align label
+        userLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         usernameField = new JTextField();
         usernameField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         usernameField.setMaximumSize(new Dimension(250, 35));
-        usernameField.setAlignmentX(Component.CENTER_ALIGNMENT); // Center align field
+        usernameField.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Password field
+        // password field
         JLabel passLabel = new JLabel("Password:");
         passLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        passLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Center align label
+        passLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         passwordField = new JPasswordField();
         passwordField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         passwordField.setMaximumSize(new Dimension(250, 35));
-        passwordField.setAlignmentX(Component.CENTER_ALIGNMENT); // Center align field
+        passwordField.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Login button
+        // login button
         JButton loginButton = new JButton("Login");
         styleButton(loginButton, new Color(70, 130, 180));
         loginButton.addActionListener(this::performLogin);
-        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center align button
+        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Add components to form with proper spacing
-        formPanel.add(Box.createVerticalGlue()); // Pushes components to center
+        // form editing
+        formPanel.add(Box.createVerticalGlue());
         formPanel.add(userLabel);
         formPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         formPanel.add(usernameField);
@@ -77,10 +77,10 @@ public class LoginDialog extends JDialog {
         formPanel.add(passwordField);
         formPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         formPanel.add(loginButton);
-        formPanel.add(Box.createVerticalGlue()); // Pushes components to center
+        formPanel.add(Box.createVerticalGlue());
 
 
-        // Registration link
+        // registration link
         JPanel registerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         registerPanel.setBackground(new Color(245, 245, 245));
         JButton registerButton = new JButton("Create new account");
@@ -90,7 +90,7 @@ public class LoginDialog extends JDialog {
             new RegistrationDialog(null).setVisible(true);
         });
         registerPanel.add(registerButton);
-        // Add all components to main panel
+        // add components to main panel
         mainPanel.add(headerPanel, BorderLayout.NORTH);
         mainPanel.add(formPanel, BorderLayout.CENTER);
         mainPanel.add(registerPanel, BorderLayout.SOUTH);
@@ -111,10 +111,10 @@ public class LoginDialog extends JDialog {
         button.setBackground(bgColor);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createEmptyBorder(10, 25, 10, 25)); // Consistent padding
+        button.setBorder(BorderFactory.createEmptyBorder(10, 25, 10, 25));
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        button.setOpaque(true);  // Crucial for visibility
-        button.setContentAreaFilled(true); // Ensure background is painted
+        button.setOpaque(true);
+        button.setContentAreaFilled(true);
     }
 
     private void styleLinkButton(JButton button) {
@@ -123,7 +123,7 @@ public class LoginDialog extends JDialog {
         button.setContentAreaFilled(false);
         button.setBorderPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        button.setOpaque(false); // For transparent background
+        button.setOpaque(false);
         button.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
     }
 
@@ -150,47 +150,4 @@ public class LoginDialog extends JDialog {
 
 
 
-    /*public LoginDialog(JFrame parent) {
-        super(parent, "Login", true);
-        setSize(300, 200);
-        setLocationRelativeTo(parent);
 
-        JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        usernameField = new JTextField();
-        passwordField = new JPasswordField();
-        JButton loginButton = new JButton("Login");
-
-        JButton registerButton = new JButton("Create Account");
-        registerButton.addActionListener(e -> {
-            dispose(); // Close login dialog
-            new RegistrationDialog(null).setVisible(true);
-        });
-        panel.add(registerButton); // Add to your existing panel
-
-        panel.add(new JLabel("Username:"));
-        panel.add(usernameField);
-        panel.add(new JLabel("Password:"));
-        panel.add(passwordField);
-        panel.add(new JLabel(""));
-        panel.add(loginButton);
-
-        loginButton.addActionListener(e -> {
-            String username = usernameField.getText();
-            String password = new String(passwordField.getPassword());
-
-            User user = DatabaseManager.authenticate(username, password);
-            if (user != null) {
-                dispose();
-                new ExpenseTrackerApp(user).setVisible(true);
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "Invalid username or password",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        add(panel);
-    } */
