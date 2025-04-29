@@ -37,7 +37,7 @@ public class DatabaseManager {
                     "date DATE NOT NULL," +
                     "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)");
 
-            // Ensure admin user exists
+            // ensure admin user exists
             stmt.executeUpdate("INSERT IGNORE INTO users (id, username, password, role) VALUES (1, 'admin', 'admin123', 'admin')");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -203,7 +203,7 @@ public class DatabaseManager {
     }
 
     public static boolean createUser(String username, String password, String role) {
-        // Normalize the role value
+        // normalize the role value
         role = role.toLowerCase();
         if (!role.equals("admin") && !role.equals("user")) {
             role = "user"; // default to user if invalid
