@@ -539,8 +539,8 @@ public class ExpenseTrackerApp extends JFrame {
     private void openSocialLink(String platform) {
         try {
             String url = switch (platform) {
-                case "github" -> "https://github.com/";
-                case "linkedin" -> "https://linkedin.com/";
+                case "github" -> "https://github.com/gsm-c/ExpenseTrackerBravo/";
+                case "linkedin" -> "www.linkedin.com/in/expense-tracker-a9129b363";
                 case "twitter" -> "https://twitter.com/";
                 case "facebook" -> "https://facebook.com/";
                 case "instagram" -> "https://instagram.com/";
